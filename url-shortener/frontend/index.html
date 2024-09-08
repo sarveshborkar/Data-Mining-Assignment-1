@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 400px;
+            animation: fadeIn 1s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            width: calc(100% - 24px);
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #short-url {
+            margin-top: 20px;
+            font-size: 16px;
+        }
+        #short-url a {
+            color: #007bff;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        #short-url a:hover {
+            text-decoration: underline;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .copy-btn, .qr-btn, .share-btn {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+        .copy-btn:hover, .qr-btn:hover, .share-btn:hover {
+            background-color: #218838;
+        }
+        .guide {
+            text-align: left;
+            margin-top: 20px;
+        }
+        .guide h2 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+        .guide p, .guide ul {
+            color: #555;
+            margin: 0 0 10px 0;
+            padding: 0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .guide ul {
+            list-style-type: disc;
+            padding-left: 20px;
+        }
+        #qr-code {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>URL Shortener</h1>
+        <form id="url-form">
+            <label for="long-url">Enter the URL:</label>
+            <input type="text" id="long-url" name="long-url" required>
+            <button type="submit">Shorten URL</button>
+        </form>
+        <div id="short-url"></div>
+        <div id="qr-code"></div>
+        <div class="guide">
+            <p>Welcome to our URL Shortener service. This tool allows you to convert long URLs into shorter, more manageable links.</p>
+            <p><strong>How to use:</strong></p>
+            <ul>
+                <li>Enter the long URL you wish to shorten in the input field above.</li>
+                <li>Click the "Shorten URL" button to generate a shortened link.</li>
+                <li>The shortened URL will appear below the form. Click on it to be redirected to the original URL.</li>
+                <li><strong>Copy, Generate QR Code, Share:</strong> Use these buttons to copy the shortened URL to your clipboard, generate a QR code, or share the link using the Web Share API.</li>
+            </ul>
+            <p>Enjoy a cleaner, more concise way to share your links.</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('url-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const longUrl = document.getElementById('long-url').value;
+            const response = await fetch('http://127.0.0.1:5000/shorten', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ url: longUrl })
+            });
+            const data = await response.json();
+            const shortUrlElement = document.getElementById('short-url');
+            shortUrlElement.innerHTML = `<a href="${data.short_url}" target="_blank">${data.short_url}</a>`;
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'button-container';
+            buttonContainer.innerHTML = `
+                <button class="copy-btn" onclick="copyToClipboard('${data.short_url}')">Copy</button>
+                <button class="qr-btn" onclick="generateQRCode('${data.short_url}')">Generate QR Code</button>
+                <button class="share-btn" onclick="shareLink('${data.short_url}')">Share</button>
+            `;
+            shortUrlElement.appendChild(buttonContainer);
+        });
+
+        function copyToClipboard(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            alert('Shortened url copied to clipboard!');
+        }
+
+        function generateQRCode(url) {
+            const qrCodeElement = document.getElementById('qr-code');
+            qrCodeElement.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}" alt="QR Code">`;
+        }
+
+        function shareLink(url) {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Check out this shortened URL',
+                    url: url
+                }).then(() => {
+                    console.log('Thanks for sharing!');
+                }).catch(console.error);
+            } else {
+                alert('Web Share API is not supported in your browser.');
+            }
+        }
+    </script>
+</body>
+</html>
