@@ -6,3 +6,5 @@ The goal is predict if company will go bankrupt or not using parameters present 
 Youtube Demonstration: https://youtu.be/d4ZcP93qpyc
 
 Dataset: https://www.kaggle.com/datasets/fedesoriano/company-bankruptcy-prediction
+
+Prediction WebApp: https://app.akkio.com/deployments/6464cdf9-ecb4-410f-815c-7f6976da588b
