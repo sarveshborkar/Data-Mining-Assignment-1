@@ -1,4 +1,4 @@
-# Generating a prediction model using AutoML tool
+# Generating a prediction model using AutoML tool - Akkio
 
 This project involves using Akkio to generate a prediction model based on company's performance metrics. 
 The goal is predict if company will go bankrupt or not using parameters present in the dataset.
